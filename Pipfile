@@ -9,6 +9,6 @@ pandas = "*"
 sklearn = "*"
 nltk = "*"
 spacy = "*"
-en-core-web-sm = "*"
+matplotlib = "*"
 
 [dev-packages]
