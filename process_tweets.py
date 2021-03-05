@@ -79,7 +79,7 @@ def _get_filtered_text_list(tweets):
     return filtered_text_list
 
 
-def _visualize_tweets(tweets, color):
+def _visualize_tweets(tweets, color, csv_name):
     most_common_number = 30
 
     filtered_text_list = _get_filtered_text_list(tweets)
@@ -87,6 +87,8 @@ def _visualize_tweets(tweets, color):
 
     tweets = tweets.assign(filtered_text=filtered_text_list)
     tweets = tweets.assign(entities=entities_list)
+
+    #tweets.to_csv("./"+csv_name+".csv", index=False, header=True)
 
     pprint(tweets['filtered_text'].head(10))
     pprint(tweets['entities'].head(10))
@@ -191,6 +193,9 @@ if __name__ == "__main__":
     pprint(donald_tweets['handle'].value_counts())
     pprint(hilary_tweets['handle'].value_counts())
 
-    _visualize_tweets(donald_tweets, "blue")
+    _visualize_tweets(donald_tweets, "teal","tweets_donald")
 
-    _visualize_tweets(hilary_tweets, "deeppink")
+    _visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
+
+    #donald_tweets.to_csv("./tweets_donals.csv", index=False, header=True)
+    #hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True)
