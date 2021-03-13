@@ -10,5 +10,6 @@ sklearn = "*"
 nltk = "*"
 spacy = "*"
 matplotlib = "*"
+pillow = "*"
 
 [dev-packages]

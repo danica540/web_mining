@@ -68,9 +68,11 @@ def _get_filtered_text_list(tweets):
         word_tokens = word_tokenize(sent_letters)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         stemmed_words = []
-        stemmer = WordNetLemmatizer()
+        stemmer = PorterStemmer()
+        #stemmer = WordNetLemmatizer()
         for word in filtered_sentence:
-            word = stemmer.lemmatize(word)
+            word = stemmer.stem(word)
+            #word = stemmer.lemmatize(word)
             stemmed_words.append(word)
 
         fdist = FreqDist(stemmed_words)
@@ -155,7 +157,8 @@ if __name__ == "__main__":
     labels_to_drop = ['in_reply_to_screen_name',
                       'in_reply_to_status_id',
                       'in_reply_to_user_id',
-                      'is_quote_status', 'longitude',
+                      'is_quote_status', 
+                      'longitude',
                       'latitude',
                       'place_id',
                       'place_full_name',
@@ -168,34 +171,54 @@ if __name__ == "__main__":
                       'place_bounding_box',
                       'source_url',
                       'truncated',
-                      'original_author',
                       'entities',
+                      'time',
+                      'retweet_count',
+                      'favorite_count',
                       'extended_entities']
+
+
     pprint(list(df.columns.values))
     df = df.drop(axis=1, labels=labels_to_drop)
     pprint(list(df.columns.values))
     pprint(df.head(5))
     pprint(df['lang'].value_counts())
     pprint(df['handle'].value_counts())
+    pprint(df['original_author'].value_counts())
+
 
     pprint("----- Check for missing values -----")
     pprint(df.isnull().sum())
 
     """ Delete all rows that have non english language """
     df = df[df.lang == 'en']
+    df_original = df[df.original_author.isnull() == True]
+    df_retweets = df[df.original_author.isnull() == False]
     pprint(df['lang'].value_counts())
 
     #df.to_csv("./tweets_cleaned.csv", index=False, header=True)
-    pprint(df.head(5))
+    pprint(df_original.head(5))
 
-    donald_tweets = df[df.handle == 'realDonaldTrump']
-    hilary_tweets = df[df.handle == 'HillaryClinton']
+    donald_tweets = df_original[df_original.handle == 'realDonaldTrump']
+    hilary_tweets = df_original[df_original.handle == 'HillaryClinton']
     pprint(donald_tweets['handle'].value_counts())
     pprint(hilary_tweets['handle'].value_counts())
 
-    _visualize_tweets(donald_tweets, "teal","tweets_donald")
+    #_visualize_tweets(donald_tweets, "teal","tweets_donald")
+    #_visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
 
-    _visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
+    donald_retweets = df_retweets[df_retweets.handle == 'realDonaldTrump']
+    hilary_retweets = df_retweets[df_retweets.handle == 'HillaryClinton']
+ 
+    #_visualize_tweets(donald_retweets, "deepskyblue","retweets_donald")
+    #_visualize_tweets(hilary_retweets, "orchid","retweets_hilary")
+
+    pprint("------- Donald Trump retweets -------------------")
+    pprint(donald_retweets['original_author'].value_counts())
+    pprint("-------Hilary Clinton retweets -------------------")
+    pprint(hilary_retweets['original_author'].value_counts())
 
     #donald_tweets.to_csv("./tweets_donals.csv", index=False, header=True)
     #hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True)
+    #donald_retweets.to_csv("./retweets_donals.csv", index=False, header=True)
+    #hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
