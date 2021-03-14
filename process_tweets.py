@@ -26,6 +26,13 @@ def _load_csv(filename):
     df = pd.read_csv(filename, na_values=['#NAN'])
     return df
 
+def _print_unique_values_of_features(X):
+    for col_name in X.columns:
+        if X[col_name].dtypes == 'object':
+            unique_cat = len(X[col_name].unique())
+            print("Atribut '{col_name}' ima {unique_cat} jedinstvenih vrednosti".format(
+                col_name=col_name, unique_cat=unique_cat))
+
 
 def _plot_horizontal_bar_chart(all_words, all_words_count, color, title):
     fig, ax = plt.subplots()
@@ -59,7 +66,7 @@ def _get_entities_list(tweets):
     return entities_list
 
 
-def _get_filtered_text_list(tweets):
+def _get_text_tags_list(tweets):
     filtered_text_list = []
     for index, row in tweets.iterrows():
         stop_words = set(stopwords.words('english'))
@@ -68,11 +75,11 @@ def _get_filtered_text_list(tweets):
         word_tokens = word_tokenize(sent_letters)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         stemmed_words = []
-        stemmer = PorterStemmer()
-        #stemmer = WordNetLemmatizer()
+        #stemmer = PorterStemmer()
+        stemmer = WordNetLemmatizer()
         for word in filtered_sentence:
-            word = stemmer.stem(word)
-            #word = stemmer.lemmatize(word)
+            #word = stemmer.stem(word)
+            word = stemmer.lemmatize(word)
             stemmed_words.append(word)
 
         fdist = FreqDist(stemmed_words)
@@ -84,7 +91,7 @@ def _get_filtered_text_list(tweets):
 def _visualize_tweets(tweets, color, csv_name):
     most_common_number = 30
 
-    filtered_text_list = _get_filtered_text_list(tweets)
+    filtered_text_list = _get_text_tags_list(tweets)
     entities_list = _get_entities_list(tweets)
 
     tweets = tweets.assign(filtered_text=filtered_text_list)
@@ -151,9 +158,11 @@ def _visualize_tweets(tweets, color, csv_name):
 
 if __name__ == "__main__":
 
+    """ Load csv file """
     filename = 'tweets.csv'
     df = _load_csv(filename)
 
+    """ Select the names of the columns to be dropped """
     labels_to_drop = ['in_reply_to_screen_name',
                       'in_reply_to_status_id',
                       'in_reply_to_user_id',
@@ -179,9 +188,17 @@ if __name__ == "__main__":
 
 
     pprint(list(df.columns.values))
+
+    """ Drop the selected columns """
     df = df.drop(axis=1, labels=labels_to_drop)
     pprint(list(df.columns.values))
     pprint(df.head(5))
+
+    """ Print the unique values of columns """
+    _print_unique_values_of_features(df)
+
+
+    """ Look the values for land, handle and original_author """
     pprint(df['lang'].value_counts())
     pprint(df['handle'].value_counts())
     pprint(df['original_author'].value_counts())
@@ -190,35 +207,42 @@ if __name__ == "__main__":
     pprint("----- Check for missing values -----")
     pprint(df.isnull().sum())
 
+
     """ Delete all rows that have non english language """
     df = df[df.lang == 'en']
-    df_original = df[df.original_author.isnull() == True]
-    df_retweets = df[df.original_author.isnull() == False]
     pprint(df['lang'].value_counts())
 
-    #df.to_csv("./tweets_cleaned.csv", index=False, header=True)
-    pprint(df_original.head(5))
+    """ Split dataset into original tweets and reteets """
+    df_original = df[df.original_author.isnull() == True]
+    df_retweets = df[df.original_author.isnull() == False]
 
+    pprint(df_original.head(5))
+ 
+    """ Split original tweets into hilarys and donalds """
     donald_tweets = df_original[df_original.handle == 'realDonaldTrump']
     hilary_tweets = df_original[df_original.handle == 'HillaryClinton']
+
+    """ Split retweeted tweets into hilarys and donalds """
+    donald_retweets = df_retweets[df_retweets.handle == 'realDonaldTrump']
+    hilary_retweets = df_retweets[df_retweets.handle == 'HillaryClinton']
+
+
     pprint(donald_tweets['handle'].value_counts())
     pprint(hilary_tweets['handle'].value_counts())
 
-    #_visualize_tweets(donald_tweets, "teal","tweets_donald")
-    #_visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
-
-    donald_retweets = df_retweets[df_retweets.handle == 'realDonaldTrump']
-    hilary_retweets = df_retweets[df_retweets.handle == 'HillaryClinton']
+    _visualize_tweets(donald_tweets, "teal","tweets_donald")
+    _visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
  
-    #_visualize_tweets(donald_retweets, "deepskyblue","retweets_donald")
-    #_visualize_tweets(hilary_retweets, "orchid","retweets_hilary")
+    _visualize_tweets(donald_retweets, "deepskyblue","retweets_donald")
+    _visualize_tweets(hilary_retweets, "orchid","retweets_hilary")
 
     pprint("------- Donald Trump retweets -------------------")
     pprint(donald_retweets['original_author'].value_counts())
     pprint("-------Hilary Clinton retweets -------------------")
     pprint(hilary_retweets['original_author'].value_counts())
 
-    #donald_tweets.to_csv("./tweets_donals.csv", index=False, header=True)
-    #hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True)
-    #donald_retweets.to_csv("./retweets_donals.csv", index=False, header=True)
-    #hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
+    # donald_tweets.to_csv("./tweets_donald.csv", index=False, header=True)
+    # hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True)
+    # donald_retweets.to_csv("./retweets_donald.csv", index=False, header=True)
+    # hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
+    # df.to_csv("./tweets_cleaned.csv", index=False, header=True)
