@@ -60,32 +60,32 @@ def _get_words_and_word_count(all_words_counted):
 def _get_entities_list(tweets):
     entities_list = []
     for index, row in tweets.iterrows():
-        sent = row['text']
-        doc = nlp(sent)
-        entities_list.append([(X.text, X.label_) for X in doc.ents])
+        tweet = row['text']
+        recognized_entities = nlp(tweet)
+        entities_list.append([(X.text, X.label_) for X in recognized_entities.ents])
     return entities_list
 
 
 def _get_text_tags_list(tweets):
-    filtered_text_list = []
+    topic_tags_list = []
     for index, row in tweets.iterrows():
         stop_words = set(stopwords.words('english'))
-        sent = row['text']
-        sent_letters = re.sub("[^a-zA-Z]", " ", sent).lower()
-        word_tokens = word_tokenize(sent_letters)
+        tweet = row['text']
+        tweet_letters = re.sub("[^a-zA-Z]", " ", tweet).lower()
+        word_tokens = word_tokenize(tweet_letters)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         stemmed_words = []
-        #stemmer = PorterStemmer()
-        stemmer = WordNetLemmatizer()
+        stemmer = PorterStemmer()
+        #stemmer = WordNetLemmatizer()
         for word in filtered_sentence:
-            #word = stemmer.stem(word)
-            word = stemmer.lemmatize(word)
+            word = stemmer.stem(word)
+            #word = stemmer.lemmatize(word)
             stemmed_words.append(word)
 
         fdist = FreqDist(stemmed_words)
         most_frequent_words = fdist.most_common(5)
-        filtered_text_list.append(most_frequent_words)
-    return filtered_text_list
+        topic_tags_list.append(most_frequent_words)
+    return topic_tags_list
 
 
 def _visualize_tweets(tweets, color, csv_name):
@@ -159,7 +159,7 @@ def _visualize_tweets(tweets, color, csv_name):
 if __name__ == "__main__":
 
     """ Load csv file """
-    filename = 'tweets.csv'
+    filename = 'twitter.csv'
     df = _load_csv(filename)
 
     """ Select the names of the columns to be dropped """
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     pprint(hilary_retweets['original_author'].value_counts())
 
     # donald_tweets.to_csv("./tweets_donald.csv", index=False, header=True)
-    # hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True)
+    hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True, encoding='utf-8-sig')
     # donald_retweets.to_csv("./retweets_donald.csv", index=False, header=True)
     # hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
     # df.to_csv("./tweets_cleaned.csv", index=False, header=True)
