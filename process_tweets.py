@@ -242,7 +242,7 @@ if __name__ == "__main__":
     pprint(hilary_retweets['original_author'].value_counts())
 
     # donald_tweets.to_csv("./tweets_donald.csv", index=False, header=True)
-    hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True, encoding='utf-8-sig')
+    #hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True, encoding='utf-8-sig')
     # donald_retweets.to_csv("./retweets_donald.csv", index=False, header=True)
     # hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
     # df.to_csv("./tweets_cleaned.csv", index=False, header=True)
