@@ -26,6 +26,7 @@ def _load_csv(filename):
     df = pd.read_csv(filename, na_values=['#NAN'])
     return df
 
+
 def _print_unique_values_of_features(X):
     for col_name in X.columns:
         if X[col_name].dtypes == 'object':
@@ -59,11 +60,23 @@ def _get_words_and_word_count(all_words_counted):
 
 def _get_entities_list(tweets):
     entities_list = []
+    url_list = []
     for index, row in tweets.iterrows():
         tweet = row['text']
+        tweet = re.sub(
+            "(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)", " ", tweet)
         recognized_entities = nlp(tweet)
-        entities_list.append([(X.text, X.label_) for X in recognized_entities.ents])
-    return entities_list
+        # url_list_tmp=[]
+        # for i, token in enumerate(recognized_entities):
+        #     if token.like_url:
+        #         token.tag_ = 'URL'
+        #         url_list_tmp.append((str(token), "URL"))
+
+        # url_list.append(url_list_tmp)
+
+        entities_list.append([(X.text, X.label_)
+                              for X in recognized_entities.ents])
+    return entities_list, url_list
 
 
 def _get_text_tags_list(tweets):
@@ -71,7 +84,10 @@ def _get_text_tags_list(tweets):
     for index, row in tweets.iterrows():
         stop_words = set(stopwords.words('english'))
         tweet = row['text']
-        tweet_letters = re.sub("[^a-zA-Z]", " ", tweet).lower()
+        tweet_letters = re.sub(
+            "(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)", " ", tweet)
+        tweet_letters = re.sub("[^a-zA-Z]", " ", tweet_letters).lower()
+
         word_tokens = word_tokenize(tweet_letters)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         stemmed_words = []
@@ -92,12 +108,23 @@ def _visualize_tweets(tweets, color, csv_name):
     most_common_number = 30
 
     filtered_text_list = _get_text_tags_list(tweets)
-    entities_list = _get_entities_list(tweets)
+    entities_list, url_list = _get_entities_list(tweets)
 
     tweets = tweets.assign(filtered_text=filtered_text_list)
     tweets = tweets.assign(entities=entities_list)
+    #tweets = tweets.assign(urls=url_list)
 
-    #tweets.to_csv("./"+csv_name+".csv", index=False, header=True)
+    # all_url_entities = []
+    # for row in tweets['urls']:
+    #     if len(row) != 0:
+    #         for pair in row:
+    #             if pair[0]:
+    #                 all_url_entities.append(pair[0])
+
+    # all_words_counted = Counter(all_url_entities).most_common(most_common_number)
+    # all_words, all_words_count = _get_words_and_word_count(all_words_counted)
+    # _plot_horizontal_bar_chart(
+    #     all_words, all_words_count, color, "Most frequent url entities")
 
     pprint(tweets['filtered_text'].head(10))
     pprint(tweets['entities'].head(10))
@@ -166,7 +193,7 @@ if __name__ == "__main__":
     labels_to_drop = ['in_reply_to_screen_name',
                       'in_reply_to_status_id',
                       'in_reply_to_user_id',
-                      'is_quote_status', 
+                      'is_quote_status',
                       'longitude',
                       'latitude',
                       'place_id',
@@ -186,7 +213,6 @@ if __name__ == "__main__":
                       'favorite_count',
                       'extended_entities']
 
-
     pprint(list(df.columns.values))
 
     """ Drop the selected columns """
@@ -197,16 +223,13 @@ if __name__ == "__main__":
     """ Print the unique values of columns """
     _print_unique_values_of_features(df)
 
-
     """ Look the values for land, handle and original_author """
     pprint(df['lang'].value_counts())
     pprint(df['handle'].value_counts())
     pprint(df['original_author'].value_counts())
 
-
     pprint("----- Check for missing values -----")
     pprint(df.isnull().sum())
-
 
     """ Delete all rows that have non english language """
     df = df[df.lang == 'en']
@@ -217,7 +240,7 @@ if __name__ == "__main__":
     df_retweets = df[df.original_author.isnull() == False]
 
     pprint(df_original.head(5))
- 
+
     """ Split original tweets into hilarys and donalds """
     donald_tweets = df_original[df_original.handle == 'realDonaldTrump']
     hilary_tweets = df_original[df_original.handle == 'HillaryClinton']
@@ -226,15 +249,14 @@ if __name__ == "__main__":
     donald_retweets = df_retweets[df_retweets.handle == 'realDonaldTrump']
     hilary_retweets = df_retweets[df_retweets.handle == 'HillaryClinton']
 
-
     pprint(donald_tweets['handle'].value_counts())
     pprint(hilary_tweets['handle'].value_counts())
 
-    _visualize_tweets(donald_tweets, "teal","tweets_donald")
-    _visualize_tweets(hilary_tweets, "deeppink","tweets_hilary")
- 
-    _visualize_tweets(donald_retweets, "deepskyblue","retweets_donald")
-    _visualize_tweets(hilary_retweets, "orchid","retweets_hilary")
+    _visualize_tweets(donald_tweets, "teal", "tweets_donald")
+    _visualize_tweets(hilary_tweets, "deeppink", "tweets_hilary")
+
+    _visualize_tweets(donald_retweets, "deepskyblue", "retweets_donald")
+    _visualize_tweets(hilary_retweets, "orchid", "retweets_hilary")
 
     pprint("------- Donald Trump retweets -------------------")
     pprint(donald_retweets['original_author'].value_counts())
@@ -242,7 +264,7 @@ if __name__ == "__main__":
     pprint(hilary_retweets['original_author'].value_counts())
 
     # donald_tweets.to_csv("./tweets_donald.csv", index=False, header=True)
-    #hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True, encoding='utf-8-sig')
+    # hilary_tweets.to_csv("./tweets_hilary.csv", index=False, header=True, encoding='utf-8-sig')
     # donald_retweets.to_csv("./retweets_donald.csv", index=False, header=True)
     # hilary_retweets.to_csv("./retweets_hilary.csv", index=False, header=True)
     # df.to_csv("./tweets_cleaned.csv", index=False, header=True)
