@@ -57,14 +57,15 @@ def _get_words_and_word_count(all_words_counted):
 
     return all_words, all_words_count
 
+def _remove_links(tweet):
+    return re.sub("(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)", " ", tweet)
 
 def _get_entities_list(tweets):
     entities_list = []
     url_list = []
     for index, row in tweets.iterrows():
         tweet = row['text']
-        tweet = re.sub(
-            "(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)", " ", tweet)
+        tweet = _remove_links(tweet)
         recognized_entities = nlp(tweet)
         # url_list_tmp=[]
         # for i, token in enumerate(recognized_entities):
@@ -84,8 +85,7 @@ def _get_text_tags_list(tweets):
     for index, row in tweets.iterrows():
         stop_words = set(stopwords.words('english'))
         tweet = row['text']
-        tweet_letters = re.sub(
-            "(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)", " ", tweet)
+        tweet_letters = _remove_links(tweet)
         tweet_letters = re.sub("[^a-zA-Z]", " ", tweet_letters).lower()
 
         word_tokens = word_tokenize(tweet_letters)
