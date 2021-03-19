@@ -180,7 +180,7 @@ def _visualize_tweets(tweets, color, csv_name):
         all_filtered_words).most_common(most_common_number)
     all_words, all_words_count = _get_words_and_word_count(all_words_counted)
     _plot_horizontal_bar_chart(
-        all_words, all_words_count, color, "Most frequent filtered words")
+        all_words, all_words_count, color, "Most frequent topics")
 
 
 if __name__ == "__main__":
