@@ -65,7 +65,7 @@ def _get_entities_list(tweets):
     url_list = []
     for index, row in tweets.iterrows():
         tweet = row['text']
-        tweet = _remove_links(tweet)
+        # tweet = _remove_links(tweet)
         recognized_entities = nlp(tweet)
         # url_list_tmp=[]
         # for i, token in enumerate(recognized_entities):
@@ -85,10 +85,10 @@ def _get_text_tags_list(tweets):
     for index, row in tweets.iterrows():
         stop_words = set(stopwords.words('english'))
         tweet = row['text']
-        tweet_letters = _remove_links(tweet)
-        tweet_letters = re.sub("[^a-zA-Z]", " ", tweet_letters).lower()
+        # tweet = _remove_links(tweet)
+        tweet = re.sub("[^a-zA-Z]", " ", tweet).lower()
 
-        word_tokens = word_tokenize(tweet_letters)
+        word_tokens = word_tokenize(tweet)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         stemmed_words = []
         stemmer = PorterStemmer()
